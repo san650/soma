@@ -68,6 +68,71 @@ const COLORS = [
 const DEFAULT_SHAPE = 'comprimido';
 const DEFAULT_COLOR = 'blanco';
 
+const UNITS = [
+  { key: 'ud',    label: 'ud.' },
+  { key: 'mg',    label: 'mg' },
+  { key: 'gotas', label: 'gotas' },
+];
+const DEFAULT_UNIT = 'ud';
+const unitLabel = (key) => (UNITS.find((u) => u.key === key) || UNITS[0]).label;
+
+// "1", "1.5", "0,5", "1/2", "1 1/2", "1½", "½", "¼", "¾", "⅓", "⅔" → number | NaN
+function parseQty(input) {
+  if (input == null) return NaN;
+  let s = String(input).trim()
+    .replace(/½/g, ' 1/2')
+    .replace(/¼/g, ' 1/4')
+    .replace(/¾/g, ' 3/4')
+    .replace(/⅓/g, ' 1/3')
+    .replace(/⅔/g, ' 2/3')
+    .replace(/,/g, '.')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!s) return NaN;
+  let m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if (m) return Number(m[1]) + Number(m[2]) / Number(m[3]);
+  m = s.match(/^(\d+)\/(\d+)$/);
+  if (m) {
+    const den = Number(m[2]);
+    if (den === 0) return NaN;
+    return Number(m[1]) / den;
+  }
+  if (/^\d+(\.\d+)?$/.test(s)) return Number(s);
+  return NaN;
+}
+
+const FRACTION_GLYPHS = [
+  [0.25, '¼'], [0.5, '½'], [0.75, '¾'],
+  [1 / 3, '⅓'], [2 / 3, '⅔'],
+];
+
+function formatQtyValue(qty, unit) {
+  if (qty == null || !Number.isFinite(qty)) return '';
+  if (unit === 'ud') {
+    const whole = Math.floor(qty);
+    const frac = qty - whole;
+    const found = FRACTION_GLYPHS.find(([v]) => Math.abs(frac - v) < 0.01);
+    if (found) return whole > 0 ? `${whole} ${found[1]}` : found[1];
+  }
+  if (Number.isInteger(qty)) return String(qty);
+  return String(Number(qty.toFixed(3))).replace('.', ',');
+}
+
+function formatQty(qty, unit) {
+  const v = formatQtyValue(qty, unit);
+  if (!v) return '';
+  return `${v} ${unitLabel(unit)}`;
+}
+
+// Accept legacy "08:00" strings AND new {time, qty} objects.
+function normalizeTimes(times) {
+  if (!Array.isArray(times)) return [];
+  return times.map((t) => {
+    if (typeof t === 'string') return { time: t, qty: 1 };
+    return { time: t.time, qty: Number.isFinite(t.qty) ? t.qty : 1 };
+  });
+}
+
 const colorHex = (key) => (COLORS.find((c) => c.key === key) || COLORS[0]).hex;
 
 const COMMAND_LABELS = {
@@ -113,12 +178,13 @@ function dosesForDay(state, date) {
   for (const med of state.medications) {
     if (!isMedicationActiveOn(med, key)) continue;
     if (!med.daysOfWeek?.includes(dow)) continue;
-    for (const time of med.times || []) {
+    for (const entry of normalizeTimes(med.times)) {
       slots.push({
         medicationId: med.id,
         medication: med,
-        time,
-        scheduledFor: `${key}T${time}`,
+        time: entry.time,
+        qty: entry.qty,
+        scheduledFor: `${key}T${entry.time}`,
       });
     }
   }
@@ -141,8 +207,9 @@ function blankMedication() {
     principle: '',
     shape: DEFAULT_SHAPE,
     color: DEFAULT_COLOR,
+    unit: DEFAULT_UNIT,
     onDemand: false,
-    times: ['08:00'],
+    times: [{ time: '08:00', qty: 1 }],
     daysOfWeek: [0, 1, 2, 3, 4, 5, 6],
     note: '',
     startDate: null,
@@ -308,6 +375,11 @@ function buildDose(state, s) {
     setText(node, 'note', s.medication.note);
     show(node, 'note', true);
   }
+  const qtyText = formatQty(s.qty, s.medication.unit || DEFAULT_UNIT);
+  if (qtyText) {
+    setText(node, 'qty', qtyText);
+    show(node, 'qty', true);
+  }
   return node;
 }
 
@@ -343,7 +415,21 @@ function buildMedRow(m, i) {
     setText(node, 'times', 'puntual · si lo necesito');
     setText(node, 'days', '');
   } else {
-    setText(node, 'times', (m.times || []).join(' · '));
+    const entries = normalizeTimes(m.times);
+    const unit = m.unit || DEFAULT_UNIT;
+    const allSame = entries.length > 0 && entries.every((e) => e.qty === entries[0].qty);
+    const isPlain = allSame && entries[0].qty === 1 && unit === 'ud';
+    let timesText;
+    if (isPlain) {
+      timesText = entries.map((e) => e.time).join(' · ');
+    } else if (allSame) {
+      timesText = `${entries.map((e) => e.time).join(' · ')} · ${formatQty(entries[0].qty, unit)}`;
+    } else {
+      timesText = entries
+        .map((e) => `${e.time} (${formatQtyValue(e.qty, unit)})`)
+        .join(' · ');
+    }
+    setText(node, 'times', timesText);
     setText(
       node,
       'days',
@@ -412,6 +498,9 @@ function buildEdit(state) {
     drafts.set(editingId, structuredClone(initial));
   }
   const d = draftFor(editingId);
+  d.unit = d.unit || DEFAULT_UNIT;
+  d.times = normalizeTimes(d.times);
+  if (d.times.length === 0) d.times = [{ time: '08:00', qty: 1 }];
 
   setText(node, 'title', isNew ? 'Nuevo medicamento' : 'Editar medicamento');
   const form = slot(node, 'form');
@@ -461,12 +550,30 @@ function buildEdit(state) {
     colorsWrap.appendChild(chip);
   });
 
+  // Units
+  const unitsWrap = slot(node, 'units');
+  const currentUnit = d.unit || DEFAULT_UNIT;
+  UNITS.forEach((u) => {
+    const chip = clone('tpl-unit-chip');
+    const on = currentUnit === u.key;
+    if (on) chip.classList.add('is-on');
+    const radio = slot(chip, 'radio');
+    radio.value = u.key;
+    radio.checked = on;
+    setText(chip, 'label', u.label);
+    unitsWrap.appendChild(chip);
+  });
+
   const timesList = slot(node, 'times');
-  d.times.forEach((t, i) => {
+  d.times.forEach((entry, i) => {
     const row = clone('tpl-time-row');
     const input = slot(row, 'input');
-    input.value = t;
+    input.value = entry.time;
     input.dataset.timeIndex = String(i);
+    const qty = slot(row, 'qty');
+    qty.value = formatQtyValue(entry.qty, d.unit);
+    qty.dataset.qtyIndex = String(i);
+    setText(row, 'unit-suffix', unitLabel(d.unit));
     slot(row, 'remove').dataset.index = String(i);
     timesList.appendChild(row);
   });
@@ -660,7 +767,12 @@ function onInput(e) {
   else if (t.name === 'startDate') d.startDate = t.value || null;
   else if (t.name === 'endDate') d.endDate = t.value || null;
   else if (t.dataset.timeIndex !== undefined) {
-    d.times[Number(t.dataset.timeIndex)] = t.value;
+    const i = Number(t.dataset.timeIndex);
+    d.times[i] = { ...d.times[i], time: t.value };
+  } else if (t.dataset.qtyIndex !== undefined) {
+    const i = Number(t.dataset.qtyIndex);
+    const parsed = parseQty(t.value);
+    d.times[i] = { ...d.times[i], qty: parsed };
   }
 }
 
@@ -686,6 +798,9 @@ function onChange(e) {
   } else if (t.name === 'color') {
     d.color = t.value;
     render();
+  } else if (t.name === 'unit') {
+    d.unit = t.value;
+    render();
   } else if (t.name === 'onDemand') {
     d.onDemand = !!t.checked;
     render();
@@ -695,7 +810,8 @@ function onChange(e) {
 function handleAddTime() {
   const d = draftFor(editingId);
   if (!d) return;
-  d.times = [...d.times, '08:00'];
+  const lastQty = d.times[d.times.length - 1]?.qty ?? 1;
+  d.times = [...d.times, { time: '08:00', qty: lastQty }];
   render();
 }
 
@@ -703,7 +819,7 @@ function handleRemoveTime(idx) {
   const d = draftFor(editingId);
   if (!d) return;
   d.times = d.times.filter((_, i) => i !== idx);
-  if (d.times.length === 0) d.times = ['08:00'];
+  if (d.times.length === 0) d.times = [{ time: '08:00', qty: 1 }];
   render();
 }
 
@@ -711,9 +827,23 @@ function handleSaveMedication() {
   const d = draftFor(editingId);
   if (!d) return;
   if (!d.name?.trim()) { flash('Falta el nombre del medicamento.'); return; }
+  const draftTimes = normalizeTimes(d.times);
   if (!d.onDemand) {
-    if (!d.times || d.times.length === 0) { flash('Añade al menos una hora.'); return; }
+    if (draftTimes.length === 0) { flash('Añade al menos una hora.'); return; }
     if (!d.daysOfWeek || d.daysOfWeek.length === 0) { flash('Selecciona al menos un día.'); return; }
+    for (const entry of draftTimes) {
+      if (!Number.isFinite(entry.qty) || entry.qty <= 0) {
+        flash('Cada hora necesita una cantidad válida.');
+        return;
+      }
+    }
+  }
+  const dedupedTimes = [];
+  const seenTimes = new Set();
+  for (const entry of [...draftTimes].sort((a, b) => a.time.localeCompare(b.time))) {
+    if (seenTimes.has(entry.time)) continue;
+    seenTimes.add(entry.time);
+    dedupedTimes.push(entry);
   }
   const existing = store.state.medications.find((m) => m.id === editingId);
   const next = {
@@ -722,8 +852,9 @@ function handleSaveMedication() {
     principle: (d.principle || '').trim(),
     shape: d.shape || DEFAULT_SHAPE,
     color: d.color || DEFAULT_COLOR,
+    unit: d.unit || DEFAULT_UNIT,
     onDemand: !!d.onDemand,
-    times: d.onDemand ? [] : [...new Set(d.times)].sort(),
+    times: d.onDemand ? [] : dedupedTimes,
     daysOfWeek: d.onDemand ? [] : [...new Set(d.daysOfWeek)].sort((a, b) => a - b),
     note: (d.note || '').trim(),
     startDate: d.startDate || null,

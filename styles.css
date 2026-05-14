@@ -489,8 +489,8 @@ input, textarea, select {
 .dose__check-mark::before {
   content: "";
   position: absolute;
-  left: 1px;
-  top: 8px;
+  left: 0px;
+  top: 6px;
   width: 7px;
   height: 2.4px;
   background: #fff;
@@ -555,6 +555,25 @@ input, textarea, select {
   padding: 0.15rem 0.4rem;
   border-radius: 999px;
   margin-right: 0.1rem;
+}
+
+.dose__qty {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  font-feature-settings: "tnum";
+  color: var(--ink);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  line-height: 1;
+}
+.dose.is-taken .dose__qty {
+  color: var(--ink-faint);
+  text-decoration: line-through;
 }
 
 /* ─────────────────────────── On-demand collapsible section ─────────────────────────── */
@@ -801,6 +820,17 @@ input, textarea, select {
   flex: 1;
 }
 
+.field__input--qty {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  font-feature-settings: "tnum";
+  text-align: center;
+  width: 4.2rem;
+  flex: 0 0 auto;
+  padding-inline: 0.4rem;
+}
+
 /* On-demand toggle (in edit form) */
 .toggle-row {
   display: flex;
@@ -926,6 +956,48 @@ input, textarea, select {
 }
 .color-chip.is-on .color-chip__swatch { box-shadow: 0 0 0 2px var(--hero); }
 
+/* Unit picker */
+
+.units {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.unit-chip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 0.3rem;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  min-height: 44px;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.unit-chip input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.unit-chip__label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--ink-soft);
+  font-feature-settings: "tnum";
+}
+
+.unit-chip.is-on { border-color: var(--hero); }
+.unit-chip.is-on .unit-chip__label { color: var(--ink); }
+
 /* Times */
 
 .times {
@@ -941,6 +1013,20 @@ input, textarea, select {
   display: flex;
   gap: 0.4rem;
   align-items: stretch;
+}
+
+.times__unit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.4rem;
+  padding-inline: 0.3rem;
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  color: var(--ink-soft);
 }
 
 .btn--icon {

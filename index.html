@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Soma · tu ración diaria</title>
   <meta name="description" content="Soma — calendario personal de medicamentos. Tu ración diaria, recordada con cariño." />
   <meta name="theme-color" content="#E55A41" />
@@ -130,6 +130,7 @@
         <div class="card__note" data-slot="note" hidden></div>
       </div>
       <div class="card__right">
+        <span class="dose__qty" data-slot="qty" hidden></span>
         <button class="dose__check" data-action="toggle-dose" data-slot="check" aria-label="Tomar">
           <span class="dose__check-mark" aria-hidden="true"></span>
         </button>
@@ -239,6 +240,11 @@
           <div class="colors" data-slot="colors"></div>
         </fieldset>
 
+        <fieldset class="field field--block">
+          <legend class="field__label">Unidad</legend>
+          <div class="units" data-slot="units"></div>
+        </fieldset>
+
         <div class="toggle-row" data-slot="ondemand-row">
           <div class="toggle-row__label">
             <span class="toggle-row__title">Toma puntual</span>
@@ -308,9 +314,20 @@
     </label>
   </template>
 
+  <template id="tpl-unit-chip">
+    <label class="unit-chip">
+      <input type="radio" name="unit" data-slot="radio" />
+      <span class="unit-chip__label" data-slot="label"></span>
+    </label>
+  </template>
+
   <template id="tpl-time-row">
     <li class="times__row">
       <input class="field__input field__input--time" type="time" data-slot="input" />
+      <input class="field__input field__input--qty" type="text"
+             inputmode="decimal" placeholder="1"
+             autocomplete="off" data-slot="qty" aria-label="Cantidad" />
+      <span class="times__unit" data-slot="unit-suffix" aria-hidden="true"></span>
       <button type="button" class="btn btn--icon" data-action="remove-time" data-slot="remove" aria-label="Quitar hora">×</button>
     </li>
   </template>
