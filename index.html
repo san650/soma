@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Soma · tu ración diaria</title>
+  <meta name="description" content="Soma — calendario personal de medicamentos. Tu ración diaria, recordada con cariño." />
+  <meta name="theme-color" content="#E55A41" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Soma" />
+
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" type="image/svg+xml" href="./icon.svg" />
+  <link rel="apple-touch-icon" href="./icon.svg" />
+
+  <link rel="apple-touch-startup-image" href="./splash/splash-1290x2796.png"
+        media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-1179x2556.png"
+        media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-1284x2778.png"
+        media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-1170x2532.png"
+        media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-1125x2436.png"
+        media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-1242x2688.png"
+        media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-828x1792.png"
+        media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-1242x2208.png"
+        media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+  <link rel="apple-touch-startup-image" href="./splash/splash-750x1334.png"
+        media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+
+  <link rel="stylesheet" href="./fonts/fonts.css" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main id="view"></main>
+
+  <!-- ───────────────────────── Hero (landscape banner) ───────────────────────── -->
+  <template id="tpl-packet">
+    <header class="hero">
+      <div class="hero__band">
+        <div class="hero__left">
+          <div class="hero__brand">SOMA · edición personal</div>
+          <div class="hero__title">
+            <span class="hero__title-row">Brave</span>
+            <span class="hero__title-row">New&nbsp;World</span>
+          </div>
+        </div>
+        <div class="hero__art" aria-hidden="true">
+          <svg viewBox="0 0 200 120" class="hero__pill">
+            <defs>
+              <pattern id="pill-speckle" x="0" y="0" width="6" height="6" patternUnits="userSpaceOnUse">
+                <rect width="6" height="6" fill="#D14A35"/>
+                <circle cx="1.5" cy="1.5" r="0.9" fill="#A82A1B"/>
+                <circle cx="4.5" cy="3.5" r="0.7" fill="#B23320"/>
+                <circle cx="2.5" cy="4.5" r="0.6" fill="#7A1A0E"/>
+                <circle cx="5" cy="1" r="0.5" fill="#E36850"/>
+              </pattern>
+            </defs>
+            <g transform="rotate(-18 100 60)">
+              <rect x="14" y="32" width="172" height="56" rx="28" ry="28"
+                fill="url(#pill-speckle)" stroke="#FFF" stroke-width="2.5" stroke-linejoin="round"/>
+              <path d="M 100 32 H 42 A 28 28 0 0 0 42 88 H 100 Z"
+                fill="#F2EBDC"/>
+              <line x1="100" y1="32" x2="100" y2="88" stroke="#FFF" stroke-width="2.5"/>
+              <path d="M 30 46 q 8 -5 22 -2" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div class="hero__strip">
+        <span class="hero__count">
+          <span class="hero__count-num" data-slot="count-taken">0</span>
+          <span class="hero__count-sep">/</span>
+          <span class="hero__count-den" data-slot="count-total">0</span>
+          <span class="hero__count-label">dosis hoy</span>
+        </span>
+        <span class="hero__actions">
+          <button class="hero__action" data-action="undo" data-slot="undo">Deshacer</button>
+          <button class="hero__action" data-action="redo" data-slot="redo">Rehacer</button>
+        </span>
+      </div>
+    </header>
+  </template>
+
+  <!-- ───────────────────────── Nav ───────────────────────── -->
+  <template id="tpl-nav">
+    <nav class="nav">
+      <button class="nav__btn" data-action="view-today" data-slot="btn-today">Hoy</button>
+      <button class="nav__btn nav__btn--primary" data-action="new-medication">+ Añadir</button>
+    </nav>
+  </template>
+
+  <!-- ───────────────────────── Today ───────────────────────── -->
+  <template id="tpl-today">
+    <section class="today">
+      <ol class="schedule" data-slot="schedule"></ol>
+    </section>
+  </template>
+
+  <template id="tpl-today-empty">
+    <section class="today">
+      <div class="empty">
+        <div class="empty__mark">⊚</div>
+        <div class="empty__title">Sin dosis programadas</div>
+        <div class="empty__hint">Pulsa <em>+ Añadir</em> para registrar tu primer medicamento.</div>
+      </div>
+    </section>
+  </template>
+
+
+  <template id="tpl-time-block">
+    <li class="time-block">
+      <div class="time-block__hour" data-slot="hour"></div>
+      <ul class="dose-list" data-slot="doses"></ul>
+    </li>
+  </template>
+
+  <template id="tpl-dose">
+    <li class="dose card">
+      <span class="card__bar" data-slot="bar" aria-hidden="true"></span>
+      <span class="card__pill" data-slot="pill" aria-hidden="true"></span>
+      <div class="card__body">
+        <div class="card__name" data-slot="name"></div>
+        <div class="card__sub card__sub--active" data-slot="active" hidden></div>
+        <div class="card__note" data-slot="note" hidden></div>
+      </div>
+      <div class="card__right">
+        <button class="dose__check" data-action="toggle-dose" data-slot="check" aria-label="Tomar">
+          <span class="dose__check-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+    </li>
+  </template>
+
+  <!-- ───────────────────────── Manage ───────────────────────── -->
+  <template id="tpl-manage">
+    <section class="manage">
+      <div class="manage__head">
+        <h2 class="section-title">Medicamentos en curso</h2>
+        <button class="btn btn--primary" data-action="new-medication">+ Nuevo</button>
+      </div>
+      <ul class="med-list" data-slot="list"></ul>
+    </section>
+  </template>
+
+  <template id="tpl-manage-empty">
+    <div class="empty empty--inline">
+      <div class="empty__title">Aún no hay medicamentos.</div>
+      <div class="empty__hint">Pulsa <em>+ Nuevo</em> para añadir el primero.</div>
+    </div>
+  </template>
+
+  <template id="tpl-med-row">
+    <li class="med-row">
+      <button class="med-row__main" data-action="edit-medication" data-slot="main">
+        <span class="med-row__bar" aria-hidden="true"></span>
+        <span class="med-row__pill" data-slot="pill" aria-hidden="true"></span>
+        <span class="med-row__text">
+          <span class="med-row__name" data-slot="name"></span>
+          <span class="med-row__active" data-slot="active" hidden></span>
+          <span class="med-row__meta">
+            <span class="med-row__times" data-slot="times"></span>
+            <span class="med-row__dot">·</span>
+            <span class="med-row__days" data-slot="days"></span>
+          </span>
+          <span class="med-row__note" data-slot="note" hidden></span>
+        </span>
+      </button>
+    </li>
+  </template>
+
+  <!-- ───────────────────────── Archive view ───────────────────────── -->
+  <template id="tpl-archive">
+    <section class="archive">
+      <div class="archive__head">
+        <h2 class="section-title">Medicamentos anteriores</h2>
+      </div>
+      <ul class="med-list med-list--archive" data-slot="list"></ul>
+    </section>
+  </template>
+
+  <template id="tpl-archive-empty">
+    <div class="empty empty--inline">
+      <div class="empty__title">Sin medicamentos anteriores.</div>
+      <div class="empty__hint">Cuando archives un medicamento aparecerá aquí.</div>
+    </div>
+  </template>
+
+  <template id="tpl-archive-row">
+    <li class="med-row med-row--archived">
+      <button class="med-row__main" data-action="edit-medication" data-slot="main">
+        <span class="med-row__bar" aria-hidden="true"></span>
+        <span class="med-row__pill" data-slot="pill" aria-hidden="true"></span>
+        <span class="med-row__text">
+          <span class="med-row__name" data-slot="name"></span>
+          <span class="med-row__active" data-slot="active" hidden></span>
+          <span class="med-row__range" data-slot="range"></span>
+        </span>
+      </button>
+    </li>
+  </template>
+
+  <!-- ───────────────────────── Edit ───────────────────────── -->
+  <template id="tpl-edit">
+    <section class="edit">
+      <div class="edit__head">
+        <button class="btn btn--ghost" data-action="back-manage">← Volver</button>
+        <h2 class="section-title" data-slot="title"></h2>
+      </div>
+      <form class="form" data-slot="form" onsubmit="return false">
+        <label class="field">
+          <span class="field__label">Nombre</span>
+          <input class="field__input" name="name" type="text"
+                 placeholder="p. ej. Ibuprofeno 400 mg"
+                 autocomplete="off" autocapitalize="words" required
+                 data-slot="name" />
+        </label>
+
+        <label class="field">
+          <span class="field__label">Principio activo (opcional)</span>
+          <input class="field__input" name="principle" type="text"
+                 placeholder="p. ej. ibuprofeno 400 mg"
+                 autocomplete="off"
+                 data-slot="principle" />
+        </label>
+
+        <fieldset class="field field--block">
+          <legend class="field__label">Forma</legend>
+          <div class="shapes" data-slot="shapes"></div>
+        </fieldset>
+
+        <fieldset class="field field--block">
+          <legend class="field__label">Color</legend>
+          <div class="colors" data-slot="colors"></div>
+        </fieldset>
+
+        <div class="toggle-row" data-slot="ondemand-row">
+          <div class="toggle-row__label">
+            <span class="toggle-row__title">Toma puntual</span>
+            <span class="toggle-row__hint">Sin horario fijo · si lo necesito</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" name="onDemand" data-slot="onDemand" />
+            <span class="switch__track"></span>
+          </label>
+        </div>
+
+        <fieldset class="field field--block" data-slot="times-block">
+          <legend class="field__label">Horas</legend>
+          <ul class="times" data-slot="times"></ul>
+          <button type="button" class="btn btn--ghost btn--small" data-action="add-time">+ Añadir hora</button>
+        </fieldset>
+
+        <fieldset class="field field--block" data-slot="days-block">
+          <legend class="field__label">Días</legend>
+          <div class="days" data-slot="days"></div>
+        </fieldset>
+
+        <details class="field field--block" data-slot="course">
+          <summary>Curso (opcional)</summary>
+          <div class="course">
+            <label class="field">
+              <span class="field__label">Desde</span>
+              <input class="field__input" type="date" name="startDate" data-slot="startDate" />
+            </label>
+            <label class="field">
+              <span class="field__label">Hasta</span>
+              <input class="field__input" type="date" name="endDate" data-slot="endDate" />
+            </label>
+          </div>
+        </details>
+
+        <label class="field">
+          <span class="field__label">Nota</span>
+          <textarea class="field__input field__textarea" name="note" rows="2"
+                    placeholder="con la comida, antes de dormir, etc."
+                    data-slot="note"></textarea>
+        </label>
+
+        <div class="edit__actions" data-slot="actions">
+          <button type="button" class="btn btn--primary" data-action="save-medication">Guardar</button>
+          <button type="button" class="btn btn--ghost" data-action="archive-medication" data-slot="archive" hidden>Archivar</button>
+          <button type="button" class="btn btn--ghost" data-action="unarchive-medication" data-slot="unarchive" hidden>Reactivar</button>
+          <button type="button" class="btn btn--danger" data-action="delete-medication" data-slot="delete" hidden>Eliminar</button>
+        </div>
+      </form>
+    </section>
+  </template>
+
+  <template id="tpl-shape-chip">
+    <label class="shape-chip">
+      <input type="radio" name="shape" data-slot="radio" />
+      <span class="shape-chip__icon" data-slot="icon"></span>
+      <span class="shape-chip__label" data-slot="label"></span>
+    </label>
+  </template>
+
+  <template id="tpl-color-chip">
+    <label class="color-chip">
+      <input type="radio" name="color" data-slot="radio" />
+      <span class="color-chip__swatch" data-slot="swatch"></span>
+      <span class="color-chip__label" data-slot="label"></span>
+    </label>
+  </template>
+
+  <template id="tpl-time-row">
+    <li class="times__row">
+      <input class="field__input field__input--time" type="time" data-slot="input" />
+      <button type="button" class="btn btn--icon" data-action="remove-time" data-slot="remove" aria-label="Quitar hora">×</button>
+    </li>
+  </template>
+
+  <template id="tpl-day-chip">
+    <label class="day-chip">
+      <input type="checkbox" name="dow" data-slot="checkbox" />
+      <span data-slot="label"></span>
+    </label>
+  </template>
+
+  <!-- ───────────────────────── Bottom drawer ───────────────────────── -->
+  <template id="tpl-drawer">
+    <aside class="drawer">
+      <button class="drawer__handle" data-action="toggle-drawer">
+        <span class="drawer__grip" aria-hidden="true"></span>
+        <span class="drawer__handle-text">
+          <span class="drawer__title">Tomar pastilla</span>
+          <span class="drawer__sub" data-slot="sub"></span>
+        </span>
+      </button>
+      <div class="drawer__inner">
+        <ul class="drawer__list" data-slot="list"></ul>
+        <button class="drawer__archive-link" data-action="view-archive" data-slot="archive-link" hidden>
+          Ver anteriores
+          <span class="drawer__archive-count" data-slot="archive-count"></span>
+        </button>
+      </div>
+    </aside>
+  </template>
+
+  <template id="tpl-drawer-row">
+    <li class="card drawer-row">
+      <span class="card__bar" aria-hidden="true"></span>
+      <button class="drawer-row__open" data-action="edit-medication" data-slot="open" aria-label="Editar">
+        <span class="card__pill" data-slot="pill" aria-hidden="true"></span>
+        <span class="card__body">
+          <span class="card__name" data-slot="name"></span>
+          <span class="card__sub card__sub--active" data-slot="active" hidden></span>
+          <span class="card__note" data-slot="note" hidden></span>
+        </span>
+      </button>
+      <div class="card__right">
+        <span class="ondemand__count" data-slot="badge" hidden></span>
+        <button class="btn-take" data-action="take-ondemand" data-slot="take">Tomar</button>
+      </div>
+    </li>
+  </template>
+
+  <template id="tpl-flash">
+    <div class="flash" role="status" aria-live="polite" data-slot="flash"></div>
+  </template>
+
+  <script type="module" src="./app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#E55A41"/>
+  <!-- tablet from above: ⊚ with score line -->
+  <circle cx="100" cy="100" r="62" fill="#FFFFFF"/>
+  <circle cx="100" cy="100" r="62" fill="none" stroke="#FFFFFF" stroke-width="0"/>
+  <line x1="44" y1="100" x2="156" y2="100" stroke="#E55A41" stroke-width="4" stroke-linecap="round"/>
+  <!-- small dot indicators (the "rays" feel from the reference) -->
+  <circle cx="100" cy="22" r="3" fill="#FFFFFF"/>
+  <circle cx="100" cy="178" r="3" fill="#FFFFFF"/>
+  <circle cx="22" cy="100" r="3" fill="#FFFFFF"/>
+  <circle cx="178" cy="100" r="3" fill="#FFFFFF"/>
+</svg>

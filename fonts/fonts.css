@@ -1,0 +1,18 @@
+/* Self-hosted from Google Fonts.
+   Manrope (variable) for the UI; Permanent Marker for the hand-lettered hero title. */
+
+@font-face {
+  font-family: 'Manrope';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(./manrope.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Permanent Marker';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(./permanent-marker.woff2) format('woff2');
+}
