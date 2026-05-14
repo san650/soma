@@ -130,7 +130,7 @@
 
   <template id="tpl-dose">
     <li class="dose card">
-      <span class="card__bar" data-slot="bar" aria-hidden="true"></span>
+      <span class="card__bar" aria-hidden="true"></span>
       <span class="card__pill" data-slot="pill" aria-hidden="true"></span>
       <div class="card__body">
         <div class="card__name" data-slot="name"></div>
@@ -294,7 +294,7 @@
           <div class="units" data-slot="units"></div>
         </fieldset>
 
-        <div class="toggle-row" data-slot="ondemand-row">
+        <div class="toggle-row">
           <div class="toggle-row__label">
             <span class="toggle-row__title">Toma puntual</span>
             <span class="toggle-row__hint">Sin horario fijo · si lo necesito</span>
@@ -337,7 +337,7 @@
                     data-slot="note"></textarea>
         </label>
 
-        <div class="edit__actions" data-slot="actions">
+        <div class="edit__actions">
           <button type="button" class="btn btn--primary" data-action="save-medication">Guardar</button>
           <button type="button" class="btn btn--ghost" data-action="archive-medication" data-slot="archive" hidden>Archivar</button>
           <button type="button" class="btn btn--ghost" data-action="unarchive-medication" data-slot="unarchive" hidden>Reactivar</button>
@@ -427,7 +427,7 @@
   </template>
 
   <template id="tpl-flash">
-    <div class="flash" role="status" aria-live="polite" data-slot="flash"></div>
+    <div class="flash" role="status" aria-live="polite"></div>
   </template>
 
   <script type="module" src="./app.js"></script>

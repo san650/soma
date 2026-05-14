@@ -79,7 +79,7 @@ main#view {
 }
 
 /* Side gutter on inner sections — hero is full-width. */
-.nav, .body, .foot {
+.nav, .body {
   padding-left: max(var(--gutter), env(safe-area-inset-left));
   padding-right: max(var(--gutter), env(safe-area-inset-right));
 }
@@ -320,16 +320,6 @@ input, textarea, select {
 
 .body { animation: rise 0.4s ease both; }
 
-/* ─────────────────────────── Section header ─────────────────────────── */
-
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  margin: 0.2rem 0.2rem 0.5rem;
-}
-
 .section-title {
   font-family: var(--display);
   font-weight: 700;
@@ -339,8 +329,6 @@ input, textarea, select {
   text-transform: uppercase;
   color: var(--ink);
 }
-
-.section-title--muted { color: var(--ink-soft); }
 
 /* ─────────────────────────── Schedule grouped by time ─────────────────────────── */
 
@@ -575,79 +563,6 @@ input, textarea, select {
   color: var(--ink-faint);
   text-decoration: line-through;
 }
-
-/* ─────────────────────────── On-demand collapsible section ─────────────────────────── */
-
-.ondemand {
-  margin-top: 1.2rem;
-  border-top: 1px solid var(--line);
-  padding-top: 0.6rem;
-}
-
-.ondemand__toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 0.5rem 0.2rem;
-  background: none;
-  color: var(--ink);
-  font-family: var(--display);
-  font-weight: 700;
-  font-size: 0.85rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.ondemand__toggle-side {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.ondemand__chev {
-  width: 12px;
-  height: 12px;
-  display: inline-block;
-  position: relative;
-  transition: transform 0.2s ease;
-}
-
-.ondemand__chev::before,
-.ondemand__chev::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 8px;
-  height: 2px;
-  background: var(--ink);
-  border-radius: 1px;
-}
-.ondemand__chev::before { left: 0; transform: translateY(-50%) rotate(45deg); }
-.ondemand__chev::after  { right: 0; transform: translateY(-50%) rotate(-45deg); }
-
-.ondemand.is-open .ondemand__chev::before { transform: translateY(-50%) rotate(-45deg); }
-.ondemand.is-open .ondemand__chev::after  { transform: translateY(-50%) rotate(45deg); }
-
-.ondemand__hint {
-  font-weight: 500;
-  font-size: 11px;
-  color: var(--ink-faint);
-  letter-spacing: 0.02em;
-  text-transform: none;
-  margin-right: 0.3rem;
-}
-
-.ondemand__list {
-  list-style: none;
-  padding: 0;
-  margin: 0.4rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.ondemand:not(.is-open) .ondemand__list { display: none; }
 
 /* ─────────────────────────── Manage / archive lists ─────────────────────────── */
 

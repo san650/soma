@@ -16,10 +16,6 @@ function setText(node, name, text) {
   const el = slot(node, name);
   if (el) el.textContent = text ?? '';
 }
-function setAttr(node, name, attr, value) {
-  const el = slot(node, name);
-  if (el) el.setAttribute(attr, value);
-}
 function show(node, name, on) {
   const el = slot(node, name);
   if (el) el.hidden = !on;
@@ -32,7 +28,6 @@ let editingId = null;
 const drafts = new Map();
 
 const DAY_SHORT = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
-const DAY_FULL = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 // Display order: Monday first, Sunday last (Spanish calendar). Values are JS-Date day indices.
 const DAY_ORDER_MON_FIRST = [1, 2, 3, 4, 5, 6, 0];
 const monIndex = (d) => (d + 6) % 7;
@@ -152,10 +147,6 @@ function pad2(n) { return String(n).padStart(2, '0'); }
 
 function dateKey(d = new Date()) {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-}
-
-function fordYear(d = new Date()) {
-  return d.getFullYear() - 1908;
 }
 
 function isMedicationActiveOn(med, key) {
@@ -294,8 +285,7 @@ function buildPillSvg(shape, color) {
   return svg;
 }
 
-function draftFor(id, init) {
-  if (init && !drafts.has(id)) drafts.set(id, structuredClone(init));
+function draftFor(id) {
   return drafts.get(id);
 }
 function clearDraft(id) { drafts.delete(id); }
