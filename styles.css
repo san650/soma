@@ -1381,6 +1381,116 @@ details[open] summary::before { content: "−"; }
   font-weight: 500;
 }
 
+/* ─────────────────────────── History link + view ─────────────────────────── */
+
+.history-link {
+  display: block;
+  width: 100%;
+  margin: 1rem 0 0.4rem;
+  padding: 0.7rem 0.75rem;
+  background: transparent;
+  color: var(--ink-soft);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  border-radius: var(--radius);
+  border: 1.5px dashed var(--line);
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+.history-link:hover {
+  background: var(--bg-soft);
+  color: var(--ink);
+  border-color: var(--ink-faint);
+}
+
+.history-link__count {
+  margin-left: 0.4rem;
+  color: var(--ink-faint);
+  font-weight: 500;
+  font-feature-settings: "tnum";
+}
+
+.history__head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.2rem 0 0.8rem;
+}
+
+.history__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.history__day-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.35rem 0.1rem;
+}
+
+.history__entries {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.history-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.55rem 0.7rem;
+  background: var(--card);
+  border-radius: var(--radius);
+  border-left: 3px solid var(--line);
+}
+
+.history-row__time {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-feature-settings: "tnum";
+  min-width: 2.6rem;
+  padding-top: 0.05rem;
+}
+
+.history-row__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.history-row__label {
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.25;
+}
+
+.history-row__sub {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-faint);
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
 /* Add bottom padding to today body so content isn't hidden under drawer handle. */
 .body--with-drawer {
   padding-bottom: calc(80px + env(safe-area-inset-bottom));

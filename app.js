@@ -326,23 +326,29 @@ function buildNav() {
 
 function buildToday(state) {
   const slots = dosesForDay(state, new Date());
-  if (slots.length === 0) return clone('tpl-today-empty');
-  const node = clone('tpl-today');
-  const groups = [];
-  for (const s of slots) {
-    const last = groups[groups.length - 1];
-    if (last && last.time === s.time) last.items.push(s);
-    else groups.push({ time: s.time, items: [s] });
+  const node = slots.length === 0 ? clone('tpl-today-empty') : clone('tpl-today');
+  if (slots.length > 0) {
+    const groups = [];
+    for (const s of slots) {
+      const last = groups[groups.length - 1];
+      if (last && last.time === s.time) last.items.push(s);
+      else groups.push({ time: s.time, items: [s] });
+    }
+    const schedule = slot(node, 'schedule');
+    groups.forEach((g, gi) => {
+      const block = clone('tpl-time-block');
+      block.style.setProperty('--delay', `${gi * 60}ms`);
+      setText(block, 'hour', g.time);
+      const doses = slot(block, 'doses');
+      for (const s of g.items) doses.appendChild(buildDose(state, s));
+      schedule.appendChild(block);
+    });
   }
-  const schedule = slot(node, 'schedule');
-  groups.forEach((g, gi) => {
-    const block = clone('tpl-time-block');
-    block.style.setProperty('--delay', `${gi * 60}ms`);
-    setText(block, 'hour', g.time);
-    const doses = slot(block, 'doses');
-    for (const s of g.items) doses.appendChild(buildDose(state, s));
-    schedule.appendChild(block);
-  });
+  const total = store.history.past.length;
+  if (total > 0) {
+    show(node, 'history-link', true);
+    setText(node, 'history-count', `(${total})`);
+  }
   return node;
 }
 
@@ -483,6 +489,87 @@ function buildArchiveRow(m, i) {
   else if (until) range = `archivado el ${until}`;
   else range = '';
   setText(node, 'range', range);
+  return node;
+}
+
+function describeAction(cmd, state) {
+  const p = cmd.payload || {};
+  const findMed = (id) => state.medications.find((m) => m.id === id);
+  const schedTime = (sf) => {
+    if (!sf) return '';
+    const m = sf.match(/T(\d{2}:\d{2})/);
+    return m ? m[1] : '';
+  };
+  switch (cmd.type) {
+    case 'ADD_MEDICATION':
+      return { label: 'Pastilla añadida', sub: p.to?.name || '' };
+    case 'UPDATE_MEDICATION':
+      return { label: 'Pastilla editada', sub: p.to?.name || '' };
+    case 'REMOVE_MEDICATION':
+      return { label: 'Pastilla eliminada', sub: p.from?.name || '' };
+    case 'LOG_DOSE': {
+      const log = p.to || {};
+      const name = findMed(log.medicationId)?.name || '(eliminada)';
+      const tag = log.onDemand ? 'puntual' : schedTime(log.scheduledFor);
+      return { label: 'Dosis marcada', sub: tag ? `${name} · ${tag}` : name };
+    }
+    case 'UNLOG_DOSE': {
+      const log = p.from || {};
+      const name = findMed(log.medicationId)?.name || '(eliminada)';
+      const tag = log.onDemand ? 'puntual' : schedTime(log.scheduledFor);
+      return { label: 'Dosis desmarcada', sub: tag ? `${name} · ${tag}` : name };
+    }
+    default:
+      return { label: cmd.type, sub: '' };
+  }
+}
+
+function dayLabel(dateK, todayK) {
+  if (dateK === todayK) return 'Hoy';
+  const today = new Date(`${todayK}T00:00:00`);
+  const that = new Date(`${dateK}T00:00:00`);
+  const diff = Math.round((today - that) / 86400000);
+  if (diff === 1) return 'Ayer';
+  return `${that.getDate()} ${MONTH[that.getMonth()].slice(0, 3)}${that.getFullYear() !== today.getFullYear() ? ' ' + that.getFullYear() : ''}`;
+}
+
+function buildHistory(state) {
+  const past = store.history.past;
+  if (!past || past.length === 0) return clone('tpl-history-empty');
+  const node = clone('tpl-history');
+  const list = slot(node, 'list');
+  const todayK = dateKey();
+
+  // Group by day, newest day first, newest entry first within day.
+  const buckets = new Map();
+  for (let i = past.length - 1; i >= 0; i--) {
+    const cmd = past[i];
+    const k = dateKey(new Date(cmd.t));
+    if (!buckets.has(k)) buckets.set(k, []);
+    buckets.get(k).push(cmd);
+  }
+
+  let dayIdx = 0;
+  for (const [k, entries] of buckets) {
+    const dayNode = clone('tpl-history-day');
+    dayNode.style.setProperty('--delay', `${dayIdx * 60}ms`);
+    setText(dayNode, 'label', dayLabel(k, todayK));
+    const entriesNode = slot(dayNode, 'entries');
+    entries.forEach((cmd) => {
+      const row = clone('tpl-history-row');
+      const d = new Date(cmd.t);
+      setText(row, 'time', `${pad2(d.getHours())}:${pad2(d.getMinutes())}`);
+      const { label, sub } = describeAction(cmd, state);
+      setText(row, 'label', label);
+      if (sub) {
+        setText(row, 'sub', sub);
+        show(row, 'sub', true);
+      }
+      entriesNode.appendChild(row);
+    });
+    list.appendChild(dayNode);
+    dayIdx++;
+  }
   return node;
 }
 
@@ -675,7 +762,7 @@ function render() {
   prevRenderedView = view;
   const frag = document.createDocumentFragment();
   frag.appendChild(buildPacket(s));
-  if (view !== 'edit') frag.appendChild(buildNav());
+  if (view !== 'edit' && view !== 'history') frag.appendChild(buildNav());
 
   const body = document.createElement('div');
   body.className = 'body';
@@ -683,6 +770,7 @@ function render() {
   if (view === 'today') body.appendChild(buildToday(s));
   else if (view === 'archive') body.appendChild(buildArchive(s));
   else if (view === 'edit') body.appendChild(buildEdit(s));
+  else if (view === 'history') body.appendChild(buildHistory(s));
   else body.appendChild(buildToday(s));
   frag.appendChild(body);
 
@@ -704,6 +792,7 @@ function onClick(e) {
 
   if (action === 'view-today') { view = 'today'; render(); return; }
   if (action === 'view-archive') { view = 'archive'; render(); return; }
+  if (action === 'view-history') { view = 'history'; render(); return; }
   if (action === 'new-medication') {
     editingId = newId();
     view = 'edit';

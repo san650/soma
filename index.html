@@ -99,6 +99,10 @@
   <template id="tpl-today">
     <section class="today">
       <ol class="schedule" data-slot="schedule"></ol>
+      <button class="history-link" data-action="view-history" data-slot="history-link" hidden>
+        Ver historial
+        <span class="history-link__count" data-slot="history-count"></span>
+      </button>
     </section>
   </template>
 
@@ -109,6 +113,10 @@
         <div class="empty__title">Sin dosis programadas</div>
         <div class="empty__hint">Pulsa <em>+ Añadir</em> para registrar tu primer medicamento.</div>
       </div>
+      <button class="history-link" data-action="view-history" data-slot="history-link" hidden>
+        Ver historial
+        <span class="history-link__count" data-slot="history-count"></span>
+      </button>
     </section>
   </template>
 
@@ -203,6 +211,47 @@
           <span class="med-row__range" data-slot="range"></span>
         </span>
       </button>
+    </li>
+  </template>
+
+  <!-- ───────────────────────── History ───────────────────────── -->
+  <template id="tpl-history">
+    <section class="history">
+      <div class="history__head">
+        <button class="btn btn--ghost" data-action="view-today">← Volver</button>
+        <h2 class="section-title">Historial</h2>
+      </div>
+      <ol class="history__list" data-slot="list"></ol>
+    </section>
+  </template>
+
+  <template id="tpl-history-empty">
+    <section class="history">
+      <div class="history__head">
+        <button class="btn btn--ghost" data-action="view-today">← Volver</button>
+        <h2 class="section-title">Historial</h2>
+      </div>
+      <div class="empty empty--inline">
+        <div class="empty__title">Aún no hay acciones.</div>
+        <div class="empty__hint">Cuando añadas o marques una pastilla aparecerá aquí.</div>
+      </div>
+    </section>
+  </template>
+
+  <template id="tpl-history-day">
+    <li class="history__day">
+      <div class="history__day-label" data-slot="label"></div>
+      <ul class="history__entries" data-slot="entries"></ul>
+    </li>
+  </template>
+
+  <template id="tpl-history-row">
+    <li class="history-row">
+      <span class="history-row__time" data-slot="time"></span>
+      <div class="history-row__body">
+        <div class="history-row__label" data-slot="label"></div>
+        <div class="history-row__sub" data-slot="sub" hidden></div>
+      </div>
     </li>
   </template>
 
