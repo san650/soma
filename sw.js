@@ -1,4 +1,4 @@
-const CACHE = 'soma-v8';
+const CACHE = 'soma-v9';
 
 const SHELL = [
   './',

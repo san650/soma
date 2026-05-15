@@ -113,6 +113,7 @@ input, textarea, select {
   color: #FFE9D9;
   overflow: hidden;
   margin-bottom: 0.9rem;
+  flex-shrink: 0;
   animation: rise 0.4s ease both;
 }
 
@@ -282,6 +283,7 @@ input, textarea, select {
   grid-template-columns: 1fr 1fr 1fr;
   gap: 0.3rem;
   margin-bottom: 0.9rem;
+  flex-shrink: 0;
 }
 
 .nav {
