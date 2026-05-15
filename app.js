@@ -751,8 +751,10 @@ function render() {
   root.classList.toggle('no-anim', prevRenderedView === view);
   prevRenderedView = view;
   const frag = document.createDocumentFragment();
-  frag.appendChild(buildPacket(s));
-  if (view !== 'edit' && view !== 'history') frag.appendChild(buildNav());
+  if (view !== 'edit' && view !== 'history') {
+    frag.appendChild(buildPacket(s));
+    frag.appendChild(buildNav());
+  }
 
   const body = document.createElement('div');
   body.className = 'body';
