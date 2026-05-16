@@ -399,7 +399,18 @@
         </span>
       </button>
       <div class="drawer__inner">
+        <div class="drawer__filters" data-slot="filters" hidden>
+          <button class="drawer__filter" data-action="toggle-buy-filter" data-slot="filter-buy" aria-pressed="false">
+            <svg class="drawer__filter-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 8h14l-1 11.5a2 2 0 0 1-2 1.8H8a2 2 0 0 1-2-1.8L5 8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M9 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span class="drawer__filter-label">Por comprar</span>
+            <span class="drawer__filter-count" data-slot="buy-count">0</span>
+          </button>
+        </div>
         <ul class="drawer__list" data-slot="list"></ul>
+        <div class="drawer__empty" data-slot="empty" hidden>Nada por comprar.</div>
         <button class="drawer__archive-link" data-action="view-archive" data-slot="archive-link" hidden>
           Ver anteriores
           <span class="drawer__archive-count" data-slot="archive-count"></span>
@@ -421,6 +432,12 @@
       </button>
       <div class="card__right">
         <span class="ondemand__count" data-slot="badge" hidden></span>
+        <button class="btn-buy" data-action="toggle-needs-buy" data-slot="buy" aria-label="Marcar para comprar" aria-pressed="false">
+          <svg class="btn-buy__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 8h14l-1 11.5a2 2 0 0 1-2 1.8H8a2 2 0 0 1-2-1.8L5 8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M9 8V6a3 3 0 0 1 6 0v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </button>
         <button class="btn-take" data-action="take-ondemand" data-slot="take">Tomar</button>
       </div>
     </li>

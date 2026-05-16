@@ -25,6 +25,7 @@ function show(node, name, on) {
 
 let view = 'today';
 let editingId = null;
+let buyFilter = false;
 const drafts = new Map();
 
 const DAY_SHORT = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
@@ -207,6 +208,7 @@ function blankMedication() {
     endDate: null,
     startedAt: null,
     archivedAt: null,
+    needsBuy: false,
     createdAt: Date.now(),
   };
 }
@@ -692,21 +694,31 @@ function buildDrawer(state) {
     .filter((m) => !m.archivedAt)
     .sort((a, b) => a.name.localeCompare(b.name));
   const archived = state.medications.filter((m) => m.archivedAt);
+  const buyCount = active.filter((m) => m.needsBuy).length;
+  if (buyFilter && buyCount === 0) buyFilter = false;
+  const visible = buyFilter ? active.filter((m) => m.needsBuy) : active;
 
   const todayK = dateKey();
   const ondemandToday = state.doseLogs.filter(
     (l) => l.onDemand && l.scheduledFor?.startsWith(todayK)
   );
-  setText(
-    node,
-    'sub',
-    active.length === 0
-      ? 'sin medicamentos'
-      : `${active.length} medicamento${active.length === 1 ? '' : 's'}`
-  );
+
+  let subText;
+  if (active.length === 0) subText = 'sin medicamentos';
+  else if (buyFilter) subText = `${buyCount} por comprar`;
+  else subText = `${active.length} medicamento${active.length === 1 ? '' : 's'}`;
+  setText(node, 'sub', subText);
+
+  if (buyCount > 0 || buyFilter) {
+    show(node, 'filters', true);
+    setText(node, 'buy-count', String(buyCount));
+    const filterBtn = slot(node, 'filter-buy');
+    filterBtn.setAttribute('aria-pressed', String(buyFilter));
+  }
 
   const list = slot(node, 'list');
-  active.forEach((m) => list.appendChild(buildDrawerRow(m, ondemandToday)));
+  visible.forEach((m) => list.appendChild(buildDrawerRow(m, ondemandToday)));
+  if (buyFilter && visible.length === 0) show(node, 'empty', true);
 
   if (archived.length > 0) {
     show(node, 'archive-link', true);
@@ -720,6 +732,7 @@ function buildDrawerRow(med, ondemandToday) {
   const node = clone('tpl-drawer-row');
   const color = med.color || DEFAULT_COLOR;
   node.style.setProperty('--row-color', `var(--pill-${color})`);
+  if (med.needsBuy) node.classList.add('is-needs-buy');
   slot(node, 'pill').replaceChildren(buildPillSvg(med.shape || DEFAULT_SHAPE, color));
   setText(node, 'name', med.name || '(sin nombre)');
   if (med.principle) {
@@ -733,6 +746,9 @@ function buildDrawerRow(med, ondemandToday) {
   slot(node, 'open').dataset.id = med.id;
   const take = slot(node, 'take');
   take.dataset.medicationId = med.id;
+  const buy = slot(node, 'buy');
+  buy.dataset.medicationId = med.id;
+  buy.setAttribute('aria-pressed', String(!!med.needsBuy));
   const taken = ondemandToday.filter((l) => l.medicationId === med.id).length;
   if (taken > 0) {
     setText(node, 'badge', `${taken}×`);
@@ -829,6 +845,15 @@ function onClick(e) {
   }
   if (action === 'take-ondemand') {
     handleTakeOnDemand(btn.dataset.medicationId);
+    return;
+  }
+  if (action === 'toggle-needs-buy') {
+    handleToggleNeedsBuy(btn.dataset.medicationId);
+    return;
+  }
+  if (action === 'toggle-buy-filter') {
+    buyFilter = !buyFilter;
+    render();
     return;
   }
   if (action === 'undo') { doUndo(); return; }
@@ -1008,6 +1033,13 @@ function handleToggleDose(medicationId, scheduledFor) {
     };
     store.dispatch(makeCommand('LOG_DOSE', { from: null, to: log }));
   }
+}
+
+function handleToggleNeedsBuy(medicationId) {
+  const existing = store.state.medications.find((m) => m.id === medicationId);
+  if (!existing) return;
+  const next = { ...existing, needsBuy: !existing.needsBuy };
+  store.dispatch(makeCommand('UPDATE_MEDICATION', { from: existing, to: next }));
 }
 
 function handleTakeOnDemand(medicationId) {
